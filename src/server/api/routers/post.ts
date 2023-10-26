@@ -5,7 +5,6 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { todos } from "~/server/db/schema";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
@@ -38,5 +37,5 @@ export const postRouter = createTRPCRouter({
 
   updateTodos: protectedProcedure
     .input(z.array(z.object({ id: z.number() })))
-    .mutation(async ({ ctx }) => {}),
+    .mutation(({ ctx }) => {}),
 });

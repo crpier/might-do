@@ -1,7 +1,9 @@
-import { DragDropContext, Draggable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Draggable } from "react-beautiful-dnd";
 import { StrictModeDroppable } from "~/utils/helpers";
 import { api } from "~/utils/api";
 import { useEffect, useState } from "react";
+
+import type { DropResult } from "react-beautiful-dnd";
 
 export default function TodoList() {
   const getTodos = api.post.getTodos.useQuery();
@@ -51,7 +53,7 @@ export default function TodoList() {
 
   const handleDelete = (id: number) => {
     const arrayIdsOrder = JSON.parse(
-      localStorage.getItem("taskOrder") || "null",
+      localStorage.getItem("taskOrder") ?? "null",
     );
 
     if (arrayIdsOrder?.length) {
