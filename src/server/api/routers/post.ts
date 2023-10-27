@@ -37,5 +37,5 @@ export const postRouter = createTRPCRouter({
 
   updateTodos: protectedProcedure
     .input(z.array(z.object({ id: z.number() })))
-    .mutation(({ ctx }) => {}),
+    .mutation(({ ctx }) => {console.log("Doing an update")}),
 });

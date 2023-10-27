@@ -5,21 +5,31 @@ import { useEffect, useState } from "react";
 
 import type { DropResult } from "react-beautiful-dnd";
 
+type todoData = {
+  id: number;
+  text: string;
+  position: number;
+  project: string | null;
+  createdById: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+};
+
 export default function TodoList() {
-  const getTodos = api.post.getTodos.useQuery();
-  const [todos, updateTodos] = useState(getTodos.data || []);
+  const getTodos = api.post.getTodos.useQuery<Array<todoData>>();
+  const [todos, updateTodos] = useState(getTodos.data ?? []);
 
   useEffect(() => {
     const arrayIdsOrder = JSON.parse(
-      localStorage.getItem("taskOrder") || "null",
-    );
+      localStorage.getItem("taskOrder") ?? "null",
+    ) as number[] | null;
 
     if (!arrayIdsOrder && getTodos?.data?.length) {
       const idsOrderArray = getTodos.data.map((task) => task.id);
       localStorage.setItem("taskOrder", JSON.stringify(idsOrderArray));
     }
 
-    let myArray;
+    let myArray: Array<todoData | undefined> = [];
     if (arrayIdsOrder?.length && getTodos?.data?.length) {
       myArray = arrayIdsOrder.map((pos: number) => {
         return getTodos.data.find((el) => el.id === pos);
@@ -33,7 +43,7 @@ export default function TodoList() {
     }
 
     if (getTodos.data) {
-      updateTodos(myArray || getTodos.data);
+      updateTodos((myArray ?? getTodos.data) as todoData[]);
     }
   }, [getTodos.data]);
 
@@ -42,8 +52,7 @@ export default function TodoList() {
 
     const tasks = [...todos];
     const [reorderedItem] = tasks.splice(result.source.index, 1);
-    // @ts-ignore
-    tasks.splice(result.destination.index, 0, reorderedItem);
+    tasks.splice(result.destination.index, 0, reorderedItem!);
 
     const idsOrderArray = tasks.map((task) => task.id);
     localStorage.setItem("taskOrder", JSON.stringify(idsOrderArray));
@@ -54,7 +63,7 @@ export default function TodoList() {
   const handleDelete = (id: number) => {
     const arrayIdsOrder = JSON.parse(
       localStorage.getItem("taskOrder") ?? "null",
-    );
+    ) as number[] | null;
 
     if (arrayIdsOrder?.length) {
       const newIdsOrderArray = arrayIdsOrder.filter(
