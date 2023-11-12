@@ -24,7 +24,7 @@ export const todos = mysqlTable("todo", {
   text: varchar("text", { length: 255 }).notNull(),
   position: int("position").notNull(),
   project: varchar("project", { length: 255 }),
-  createdById: varchar("created_by_id", { length: 255 }).notNull(),
+  createdById: int("created_by_id").notNull(),
   createdAt: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

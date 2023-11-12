@@ -2,21 +2,13 @@ import { DragDropContext, Draggable } from "react-beautiful-dnd";
 import { StrictModeDroppable } from "~/utils/helpers";
 import { api } from "~/utils/api";
 import { useEffect, useState } from "react";
+import { todoData } from "~/utils/types";
 
 import type { DropResult } from "react-beautiful-dnd";
 
-type todoData = {
-  id: number;
-  text: string;
-  position: number;
-  project: string | null;
-  createdById: string;
-  createdAt: Date;
-  updatedAt: Date | null;
-};
-
 export default function TodoList() {
-  const getTodos = api.post.getTodos.useQuery<Array<todoData>>();
+  const getTodos = api.post.getTodos.useQuery();
+  const updateTodosOrder = api.post.updateTodosOrder.useMutation({});
   const [todos, updateTodos] = useState(getTodos.data ?? []);
 
   useEffect(() => {
@@ -54,8 +46,11 @@ export default function TodoList() {
     const [reorderedItem] = tasks.splice(result.source.index, 1);
     tasks.splice(result.destination.index, 0, reorderedItem!);
 
-    const idsOrderArray = tasks.map((task) => task.id);
-    localStorage.setItem("taskOrder", JSON.stringify(idsOrderArray));
+    const reorderedTodos = tasks.map((task, index) => {
+      task.position = index;
+      return task
+    });
+    updateTodosOrder.mutate([...reorderedTodos]);
 
     updateTodos(tasks);
   };
@@ -81,26 +76,28 @@ export default function TodoList() {
         <StrictModeDroppable droppableId="todos">
           {(provided, snapshot) => (
             <ul {...provided.droppableProps} ref={provided.innerRef}>
-              {todos.map((todo, index) => {
-                return (
-                  <Draggable
-                    key={todo.id}
-                    draggableId={todo.id.toString()}
-                    index={index}
-                  >
-                    {(provided) => (
-                      <li
-                        className=""
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        {todo.text}
-                      </li>
-                    )}
-                  </Draggable>
-                );
-              })}
+              {todos
+                .sort((todoA, todoB) => todoA.position - todoB.position)
+                .map((todo, index) => {
+                  return (
+                    <Draggable
+                      key={todo.id}
+                      draggableId={todo.id.toString()}
+                      index={index}
+                    >
+                      {(provided) => (
+                        <li
+                          className=""
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          {todo.text}
+                        </li>
+                      )}
+                    </Draggable>
+                  );
+                })}
               {provided.placeholder}
             </ul>
           )}
